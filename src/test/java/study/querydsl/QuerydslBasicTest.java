@@ -636,7 +636,6 @@ public class QuerydslBasicTest {
     }
 
     @Test
-    @Commit
     public void bulkUpdate() throws Exception {
         
         //member1 = 10 -> DB member1
@@ -652,7 +651,7 @@ public class QuerydslBasicTest {
 
         em.flush();
         em.clear();
-        
+
         //1 member1 = 10 -> 1 DB 비회원
         //2 member2 = 20 -> 2 DB 비회원
         //3 member3 = 30 -> 3 DB member3
@@ -661,5 +660,50 @@ public class QuerydslBasicTest {
         List<Member> result = queryFactory
                 .selectFrom(member)
                 .fetch();
+
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    public void bulkAdd() throws Exception {
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+    }
+
+    @Test
+    public void bulkDelete() throws Exception {
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+    }
+
+    @Test
+    public void sqlFunction() throws Exception {
+        List<String> result = queryFactory
+                .select(Expressions.stringTemplate("function('replace', {0}, {1}, {2})", member.username, "member", "M"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void sqlFunction2() throws Exception {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .where(member.username.eq(
+                        Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .fetch();
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
     }
 }
